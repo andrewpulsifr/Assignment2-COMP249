@@ -1,5 +1,6 @@
 import java.util.Scanner;
 
+import ExceptionClasses.MissingFieldException;
 import ExceptionClasses.TooFewFieldsException;
 import ExceptionClasses.TooManyFieldsException;
 
@@ -16,10 +17,11 @@ import java.io.File;
 
 public class Driver {
 	
-	private String [] feildHolder= null;
-	
 
 	private static void part1() {
+		Scanner sc = new Scanner("hi\"hey there");
+		sc.useDelimiter("\"");
+		System.out.println(sc.next());
 		Scanner scInput = null;
 		Scanner scFileReader = null;
 		Scanner fieldsScanner =null;
@@ -30,6 +32,7 @@ public class Driver {
 		int ctr =0;
 		int fieldCounter =0;
 		String [] holder= null;
+		boolean quotes = false;
 		
 		try {
 			scInput= new Scanner (new FileInputStream(inputNames));//open list of file names
@@ -47,10 +50,14 @@ public class Driver {
 							while(scFileReader.hasNextLine()) {
 								try {
 									String book = scFileReader.nextLine();
+									String qbook = null;
+									int numFields =0;
 									
 									if(book.charAt(0) == '"') {
 										numFields = book.substring(book.indexOf('"',1),book.length()).split(",").length;
+										qbook= book.substring(book.indexOf('"',1),book.length());
 										System.out.println(numFields+" :using quoation");
+										quotes=true;
 									}
 										else
 										{
@@ -66,11 +73,19 @@ public class Driver {
 										}
 										else
 											throw new TooFewFieldsException();
-									fieldCounter =0;
+									
 									while(fieldCounter<holder.length) {
 										
+										System.out.println(holder[fieldCounter]);
+										fieldCounter++;
+									}
+									fieldCounter =0;
+									if(quotes==true)
+										fieldCounter++;
+									while(fieldCounter<holder.length) {
+							
 										if(holder[fieldCounter].length()==0)
-											throw new MissingFieldException(fileCounter);
+											throw new MissingFieldException();
 										fieldCounter++;
 									}
 										
@@ -103,31 +118,7 @@ public class Driver {
 		}
 
 	}
-	
-	private boolean checkNumberOfFields(String book) throws TooManyFieldsException, TooFewFieldsException{
-		boolean correctNum = false;
-		int numFields;
-		
-		if(book.charAt(0) == '"') {
-			numFields = book.substring(book.indexOf('"',1),book.length()).split(",").length;
-			book=book.substring(book.indexOf('"',1),book.length());
-			System.out.println(numFields+" :using quoation");
-		}
-			else
-			{
-				numFields=book.split(",").length;
-				System.out.println(numFields);
-			}
-		if(numFields==6) {
-			feildHolder= book.split(",");
-			
-		}
-			else if(numFields<6) {
-				throw new TooManyFieldsException();
-			}
-			else
-				throw new TooFewFieldsException();
-	}
+
 
 	public static void main(String[] args) {
 		
