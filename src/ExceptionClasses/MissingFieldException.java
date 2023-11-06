@@ -12,7 +12,7 @@ public class MissingFieldException extends Exception {
 		super("Syntax Error: Missing Feild exception.");
 	}
 	
-	public MissingFieldException(int field, String book) {
+	public MissingFieldException(int field) {
 		super("Syntax Error: Missing Feild exception at field number: "+field);
 	
 		

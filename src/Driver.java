@@ -52,8 +52,8 @@ public class Driver {
 				System.out.println(numInput);
 				scInput.nextLine();//moves down a line from the number
 				
-				//while(ctr<=numInput && scInput.hasNextLine()) {//iterates through all book names
-				while(ctr<3 && scInput.hasNextLine()) {
+				while(ctr<=numInput && scInput.hasNextLine()) {//iterates through all book names
+				//while(ctr<3 && scInput.hasNextLine()) {
 						try {
 							String name =scInput.nextLine();
 							System.out.println(name);
@@ -116,7 +116,7 @@ public class Driver {
 				}
 			}
 				
-			//}
+		
 			scInput.close();
 			errStream.close();
 		}
@@ -126,49 +126,63 @@ public class Driver {
 	}
 
 	private static void checkSyntax(String book) throws TooManyFieldsException,TooFewFieldsException,MissingFieldException,UnknownGenreException {
-		boolean correctSyntax= true;
-		Scanner sc = new Scanner(book);
-		Scanner sc1 = new Scanner(book);
-		int numOfFields=0;
-		int feildCounter=0;
-				
-		if(book.charAt(0)=='"') {
-			sc.useDelimiter("\"");
-			System.out.println(sc.next());
-			System.out.println(book.substring(book.indexOf('"',1)+1,book.length()));
-			numOfFields=Driver.countCommas(book.substring(book.indexOf('"',1),book.length()));
-		}
-		
-		numOfFields=Driver.countCommas(book);
 	
-		sc.useDelimiter(",");
+		int commaCount = 0;
+		int holdStart=0;
+		int holdEnd=-1;
+		String field = "";
 		
-		while(sc.hasNext()) {
-			String field =sc.next();
-			System.out.println(field);
-			System.out.println(Driver.isMissing(field));
-			
-			if(Driver.isMissing(field)==true) {
-				throw new MissingFieldException(numOfFields,book);
-			}
-			if(feildCounter==4) {
-				if(Driver.checkGenre(field))
-					throw new UnknownGenreException();
-			}
-			
-			feildCounter++;
+		
+		if(book.charAt(0)=='"') {
+			System.out.println(book.substring(book.indexOf('"',1)-1,book.length()));
+			book=book.substring(book.indexOf('"',1)-1,book.length());
 		}
-		
-		if(numOfFields>5) {
-			System.out.println(numOfFields);
+
+        for (int i = 0; i < book.length(); i++) {
+        	
+            if (book.charAt(i) == ',') {
+                commaCount++;
+            
+                holdStart=holdEnd+1;
+                holdEnd=i;
+                field =book.substring(holdStart,holdEnd);
+             
+        		System.out.println(Driver.isMissing(field));
+        		
+        		if(Driver.isMissing(field)==true) {
+        			throw new MissingFieldException(commaCount);
+        		}
+        		
+        		if(commaCount==5) {
+    				if(Driver.checkGenre(field))
+    					throw new UnknownGenreException();
+    			}
+        		if(i==book.length()-1) {
+	        		holdStart=holdEnd+1;
+	                holdEnd=book.length();
+	                field =book.substring(holdStart,holdEnd);
+	                
+	                System.out.println(field);
+	        		System.out.println(Driver.isMissing(field));
+        		
+	        		if(Driver.isMissing(field)==true) {
+	        			System.out.println("ERROR :missing year");
+	        			throw new MissingFieldException(commaCount);
+	        		}
+        		}
+                
+            } 
+        
+        }
+        
+        System.out.println(commaCount);
+		if(commaCount>5) {
 			throw new TooManyFieldsException();
 		}
-			else if(numOfFields<5) {
-				System.out.println(numOfFields);
+			else if(commaCount<5) {
 				throw new TooFewFieldsException();
 			}
 		
-		System.out.println(numOfFields);
 		
 		
 	}
@@ -208,17 +222,6 @@ public class Driver {
 				+"\n====================");
 	}
 	
-	private static int countCommas(String book) {
-		int commaCount = 0;
-
-        for (int i = 0; i < book.length(); i++) {
-            if (book.charAt(i) == ',') {
-                commaCount++;
-            }
-        }
-        
-        return commaCount;
-	}
 	
 	public static void main(String[] args) {
 		
