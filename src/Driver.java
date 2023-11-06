@@ -5,14 +5,13 @@ import ExceptionClasses.TooFewFieldsException;
 import ExceptionClasses.TooManyFieldsException;
 import ExceptionClasses.UnknownGenreException;
 
-import java.io.PrintWriter;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.BufferedWriter;
 import java.io.File;
 
 
@@ -31,6 +30,11 @@ public class Driver {
 		for(int c=0; c<genreFileName.length;c++ ) {
 			 try {
 				 FileWriter genreFileWriter = new FileWriter(genreFileName[c]);
+				 BufferedWriter writer = new BufferedWriter(genreFileWriter);
+				 writer.write("Title,Authors,Price,Isbn,Genre,Year");
+				 writer.newLine();
+				 
+				 writer.close();
 			 }catch (IOException e) {
 		            e.printStackTrace();
 		            System.out.println("An error occurred while creating the CSV file.");
@@ -84,7 +88,6 @@ public class Driver {
 							while(scFileReader.hasNextLine()) {
 								book = scFileReader.nextLine();
 								try {
-									//scFileReader.nextLine();
 									genre=Driver.checkSyntax(book);
 									Driver.printGenereFile(genre, book);
 								}
@@ -148,6 +151,9 @@ public class Driver {
 		int holdEnd=-1;
 		String field = "";
 		String genre="";
+		boolean missingField=false;
+		int fieldPos=0;
+		boolean genreCheck=false;
 		
 		
 		if(book.charAt(0)=='"') {
@@ -158,39 +164,43 @@ public class Driver {
         	
             if (book.charAt(i) == ',') {
                 commaCount++;
-            
                 holdStart=holdEnd+1;
                 holdEnd=i;
                 field =book.substring(holdStart,holdEnd);
                      		
         		if(Driver.isMissing(field)==true) {
-        			throw new MissingFieldException(commaCount);
+        			missingField=true;
+        			if(fieldPos==0) {
+        				fieldPos=commaCount;
+        			}
         		}
         		
         		if(commaCount==5) {
     				if(Driver.checkGenre(field))
-    					throw new UnknownGenreException();
+    					genreCheck=true;
     				else
     					genre=field;
     					
     			}
         		if(i==book.length()-1) {
-                    commaCount++;
 	        		holdStart=holdEnd+1;
 	                holdEnd=book.length();
 	                field =book.substring(holdStart,holdEnd);
 	                        		
 	        		if(Driver.isMissing(field)==true) {
-	        			System.out.println("ERROR :missing year");
-	        			throw new MissingFieldException(commaCount);
+	        			missingField=true;
+	        			if(fieldPos==0) {
+	        				fieldPos=6;
+	        				
+	        			}
+	        		
 	        		}
-        		}
         		
                 
-            } 
+        		} 
         
+            }
         }
-        
         System.out.println(commaCount);
 		if(commaCount>5) {
 			throw new TooManyFieldsException();
@@ -198,6 +208,12 @@ public class Driver {
 			else if(commaCount<5) {
 				throw new TooFewFieldsException();
 			}
+				else if(missingField) {
+					throw new MissingFieldException(fieldPos);
+				}
+					else if(genreCheck) {
+						throw new UnknownGenreException();
+					}
 		
 		return genre;
 		
