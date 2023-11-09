@@ -1,5 +1,12 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
+import org.w3c.dom.ranges.RangeException;
+
+import ExceptionClasses.BadIsbn10Exception;
+import ExceptionClasses.BadIsbn13Exception;
+import ExceptionClasses.BadPriceException;
+import ExceptionClasses.BadYearException;
 import ExceptionClasses.MissingFieldException;
 import ExceptionClasses.TooFewFieldsException;
 import ExceptionClasses.TooManyFieldsException;
@@ -272,6 +279,8 @@ public class Driver {
 				+"\n====================");
 	}
 	
+	
+	
 private static boolean checkGenre(String field) {
 		
 		switch(field) {
@@ -295,12 +304,189 @@ private static boolean checkGenre(String field) {
 				return true;
 		}
 	}
+private static Book[] createArr(int c) {
 	
+int errorCounter=0;
+int bookCtr=0;
+ArrayList<Book> bookList = new ArrayList<>();
+	
+	PrintStream errStream = null;
+	
+	try {
+		errStream = new PrintStream(new FileOutputStream("semantic_error_file.txt",false));
+	} 
+	catch (FileNotFoundException e) {
+		e.printStackTrace();
+	}
+	
+	System.setErr(errStream);
+	
+	try {
+		Scanner sc= new Scanner(new FileInputStream(genreFileName[c]));
+		errorCounter=0;
+		while(sc.hasNextLine()) {
+			String book= sc.nextLine();
+			if(book.contains("\"")) {
+				
+			}
+			String [] split = book.split(",");
+
+			try {
+				double price;
+				int year;
+				
+				try {
+					System.out.println(split[2]);
+				    price = Double.parseDouble(split[2]);
+				} catch (NumberFormatException e) {
+				   throw  new BadPriceException();
+				}
+				
+				try {
+				    year = Integer.parseInt(split[5]);
+				} catch (NumberFormatException e) {
+				   throw  new BadYearException();
+				}
+				 bookList.add(new Book(split[0],split[1],Driver.checkPrice(price),Driver.checkISBN(split[3]),split[4],Driver.checkYear(year)));
+				 bookCtr++;
+			}
+			catch(BadPriceException e) {
+				if(errorCounter==0)
+					Driver.printErrorFileName(genreFileName[c]);
+				System.err.println("Error: Bad Price\n"
+						+ "Record: "+book+"\n");
+				errorCounter++;
+			}
+			
+			catch(BadIsbn10Exception e) {
+				if(errorCounter==0)
+					Driver.printErrorFileName(genreFileName[c]);
+				System.err.println("Error: Bad Isbn of length 10\n"
+						+ "Record: "+book+"\n");
+				errorCounter++;
+				
+			}
+			catch(BadIsbn13Exception e) {
+				if(errorCounter==0)
+					Driver.printErrorFileName(genreFileName[c]);
+				System.err.println("Error: Bad Isbn of length 13\n"
+						+ "Record: "+book+"\n");
+				errorCounter++;
+			}
+			catch(BadYearException e) {
+				if(errorCounter==0)
+					Driver.printErrorFileName(genreFileName[c]);
+				System.err.println("Error: Bad year\n"
+						+ "Record: "+book+"\n");
+				errorCounter++;
+				
+			}
+			
+		}
+	}
+	catch(FileNotFoundException e) {
+		System.out.println("Error: Genre File Not Found");
+	}
+	
+	Book [] bookArr= new Book[bookCtr];
+	
+	for(int c1=0; c<bookCtr;c++) {
+		bookArr[c]=bookList.get(0);
+		System.out.println(bookArr);
+	}
+	return bookArr;
+}
+
+private static void part2() {
+	
+	
+	for(int c=0; c<genreFileName.length;c++) {
+		createArr(c);
+	}
+	
+	
+	
+	
+		
+}
+
+	
+private static double checkPrice(double price) throws BadPriceException {
+	
+	if(price<0)
+		throw new BadPriceException();	
+	
+	return price;
+
+}
+
+private static int checkYear(int year) throws BadYearException {
+	if(year<1995|| year>2010)
+		throw new BadYearException();
+	
+	return year;
+}
+
+private static String checkISBN(String ISBN) throws BadIsbn10Exception, BadIsbn13Exception{
+	
+	if(ISBN.length()==10) {
+		
+			if(ISBN.contains("X")) 
+				throw new BadIsbn10Exception();
+			
+			if(Driver.checkISBN10(ISBN))
+				throw new BadIsbn10Exception();
+	}
+	else {
+		
+			if(ISBN.contains("X")) 
+				throw new BadIsbn10Exception();
+			
+			if(Driver.checkISBN13(ISBN)) 
+				throw new BadIsbn13Exception();
+		
+	}
+	
+	return ISBN;
+	
+	
+}
+
+private static boolean checkISBN10(String ISBN ) {
+	int sum =0;
+	
+	for(int c=0; c<10; c++) {
+		sum +=(int)(ISBN.charAt(c))*(c+1);
+		
+	}
+	
+	return !(sum%11==0);
+}
+
+private static boolean checkISBN13(String ISBN) {
+	long sum =0;
+	
+	
+	
+	for(int c=0; c<13; c++) {
+		
+		if((c+1)%2==0) 
+			sum+= (int)ISBN.charAt(c)*3;
+			else
+				sum+=(int)ISBN.charAt(c);
+	}
+	
+	return !(sum%10==0);
+
+}
+
+
 	public static void main(String[] args) {
 		
-		Driver.part1();// validating syntax, partition book records based on genre.
-		/*
+		//Driver.part1();// validating syntax, partition book records based on genre.
+		
 		part2(); // validating semantics, read the genre files each into arrays of Book objects,
+		/*
 		 // then serialize the arrays of Book objects each into binary files.
 		part3(); // reading the binary files, deserialize the array objects in each file, and
 		*/
