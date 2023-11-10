@@ -2,18 +2,28 @@ import java.io.Serializable;
 
 public class Book implements Serializable  {
 	
+	private static int nextSerialNumber = 1;
+	private int serialNumber;
 	private String name;
 	private String author;
 	private String ISBN;
 	private double price;
+	private String genre;
 	private int year;
 	
 	public Book(String name, String author,double price,String ISBN,String genre, int year) {
+		this.setSerialNumber(nextSerialNumber++);
 		this.setName(name);
 		this.setAuthor(author);
 		this.setISBN(ISBN);
 		this.setPrice(price);
 		this.setYear(year);
+		this.setGenre(genre);
+	}
+
+	private void setSerialNumber(int serialNumber) {
+		this.serialNumber=serialNumber;
+		
 	}
 
 	public String getName() {
@@ -56,5 +66,23 @@ public class Book implements Serializable  {
 		this.year = year;
 	}
 	
+	public String toString() {
+		return "Name: "+name+
+				"\nAuthor: "+author+
+				"\nISBN: "+ ISBN+
+				"\nPrice: "+ price+
+				"\nGenre: "+ genre+
+				"\nYear: "+ year+
+				"\nISBN: "+ serialNumber;
+		
+	}
+
+	public String getGenre() {
+		return genre;
+	}
+
+	public void setGenre(String genre) {
+		this.genre = genre;
+	}
 	
 }

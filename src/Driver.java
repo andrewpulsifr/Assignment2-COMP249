@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.Scanner;
 
 import org.w3c.dom.ranges.RangeException;
@@ -17,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -304,11 +304,123 @@ private static boolean checkGenre(String field) {
 				return true;
 		}
 	}
-private static Book[] createArr(int c) {
+private static String[] containsQ(String book) {
+	
+	String [] quoteSeperated = book.split("\"");
+	String [] commaSeperated=quoteSeperated[2].split(",");
+	String [] bookArr= new String[commaSeperated.length];
+	bookArr[0]=quoteSeperated[1];
+	for(int c=1; c<commaSeperated.length;c++) {
+		bookArr[c]=commaSeperated[c];
+	}
+	return bookArr;
+}
+
+private static double parsePrice(String priceStr) throws BadPriceException {
+	try {
+	   return Double.parseDouble(priceStr);
+	} catch (NumberFormatException e) {
+	   throw  new BadPriceException();
+	}
+}
+private static int parseYear(String yearStr) throws BadPriceException {
+	try {
+	   return Integer.parseInt(yearStr);
+	} catch (NumberFormatException e) {
+	   throw  new BadPriceException();
+	}
+}
+
+private static Book[] createArr(int c) throws FileNotFoundException {
 	
 int errorCounter=0;
-int bookCtr=0;
-ArrayList<Book> bookList = new ArrayList<>();
+Book[] ArrOfGenres= new Book[1];
+String [] fieldArr;
+	
+	PrintStream errStream = null;
+	
+		//Sets the output of err to semantic error file
+		errStream = new PrintStream(new FileOutputStream("semantic_error_file.txt",false));
+		System.setErr(errStream);
+		
+		Scanner sc= new Scanner(new FileInputStream(genreFileName[c]));//opens genre cvs file
+		
+		while(sc.hasNextLine()) {//while there is a book on the next line continue
+		
+				String book= sc.nextLine();//read in book
+				
+				if(book.contains("\""))//if book title has surrounding quotations seperate name 
+					fieldArr=containsQ(book);
+				else
+					fieldArr= book.split(",");
+				Book [] tempArr= new Book[ArrOfGenres.length+1];
+				tempArr= ArrOfGenres;
+				
+				
+			try {
+				tempArr[tempArr.length-1]= new Book(fieldArr[0],fieldArr[1],checkPrice(parsePrice(fieldArr[2])),checkISBN(fieldArr[3]),fieldArr[4],checkYear(parseYear(fieldArr[5])));
+				ArrOfGenres=tempArr;
+			}
+			catch(BadPriceException e) {
+				if(errorCounter==0)
+					printErrorFileName(genreFileName[c]);
+				System.err.println("Error: Bad Price\n"
+						+ "Record: "+book+"\n");
+				errorCounter++;
+			}
+			
+			catch(BadIsbn10Exception e) {
+				if(errorCounter==0)
+					printErrorFileName(genreFileName[c]);
+				System.err.println("Error: Bad Isbn of length 10\n"
+						+ "Record: "+book+"\n");
+				errorCounter++;
+				
+			}
+			catch(BadIsbn13Exception e) {
+				if(errorCounter==0)
+					printErrorFileName(genreFileName[c]);
+				System.err.println("Error: Bad Isbn of length 13\n"
+						+ "Record: "+book+"\n");
+				errorCounter++;
+			}
+			catch(BadYearException e) {
+				if(errorCounter==0)
+					printErrorFileName(genreFileName[c]);
+				System.err.println("Error: Bad year\n"
+						+ "Record: "+book+"\n");
+				errorCounter++;
+				
+			}
+			
+		}
+	
+	return ArrOfGenres;
+}
+
+private static void printToBinary(Book [] arrBooks, String genreFileName) {
+	try {
+		ObjectOutputStream oos= new ObjectOutputStream( new FileOutputStream(genreFileName+".ser"));
+		
+		for(int c=0; c<arrBooks.length;c++) {
+			oos.writeObject(arrBooks[c]);
+		}
+		oos.close();
+	}
+	catch(FileNotFoundException e) {
+		System.out.println("File not found exception thrown.");
+		e.printStackTrace();
+	}
+	catch(IOException e) {
+		System.out.println("File input output thrown.");
+		e.printStackTrace();
+	}
+	
+}
+
+private static void part2() {
+	
+	int errorCounter=0;
 	
 	PrintStream errStream = null;
 	
@@ -321,90 +433,17 @@ ArrayList<Book> bookList = new ArrayList<>();
 	
 	System.setErr(errStream);
 	
-	try {
-		Scanner sc= new Scanner(new FileInputStream(genreFileName[c]));
-		errorCounter=0;
-		while(sc.hasNextLine()) {
-			String book= sc.nextLine();
-			if(book.contains("\"")) {
-				
-			}
-			String [] split = book.split(",");
-
-			try {
-				double price;
-				int year;
-				
-				try {
-					System.out.println(split[2]);
-				    price = Double.parseDouble(split[2]);
-				} catch (NumberFormatException e) {
-				   throw  new BadPriceException();
-				}
-				
-				try {
-				    year = Integer.parseInt(split[5]);
-				} catch (NumberFormatException e) {
-				   throw  new BadYearException();
-				}
-				 bookList.add(new Book(split[0],split[1],Driver.checkPrice(price),Driver.checkISBN(split[3]),split[4],Driver.checkYear(year)));
-				 bookCtr++;
-			}
-			catch(BadPriceException e) {
-				if(errorCounter==0)
-					Driver.printErrorFileName(genreFileName[c]);
-				System.err.println("Error: Bad Price\n"
-						+ "Record: "+book+"\n");
-				errorCounter++;
-			}
-			
-			catch(BadIsbn10Exception e) {
-				if(errorCounter==0)
-					Driver.printErrorFileName(genreFileName[c]);
-				System.err.println("Error: Bad Isbn of length 10\n"
-						+ "Record: "+book+"\n");
-				errorCounter++;
-				
-			}
-			catch(BadIsbn13Exception e) {
-				if(errorCounter==0)
-					Driver.printErrorFileName(genreFileName[c]);
-				System.err.println("Error: Bad Isbn of length 13\n"
-						+ "Record: "+book+"\n");
-				errorCounter++;
-			}
-			catch(BadYearException e) {
-				if(errorCounter==0)
-					Driver.printErrorFileName(genreFileName[c]);
-				System.err.println("Error: Bad year\n"
-						+ "Record: "+book+"\n");
-				errorCounter++;
-				
-			}
-			
-		}
-	}
-	catch(FileNotFoundException e) {
-		System.out.println("Error: Genre File Not Found");
-	}
-	
-	Book [] bookArr= new Book[bookCtr];
-	
-	for(int c1=0; c<bookCtr;c++) {
-		bookArr[c]=bookList.get(0);
-		System.out.println(bookArr);
-	}
-	return bookArr;
-}
-
-private static void part2() {
-	
 	
 	for(int c=0; c<genreFileName.length;c++) {
-		createArr(c);
+		try {
+			
+			printToBinary( createArr(c),genreFileName[c]);
+			
+		}
+		catch(FileNotFoundException e) {
+			System.out.println("Error: Genre File Not Found");
+		}
 	}
-	
-	
 	
 	
 		
