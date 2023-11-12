@@ -2,9 +2,25 @@ package ExceptionClasses;
 
 public class TooFewFieldsException extends Exception {
 	
-	public TooFewFieldsException(){
-		super("Syntax Error: Too Few fields Excpetion");
-	}
+private String book = "";
 	
+	
+	public TooFewFieldsException(String book) {
+		
+		super("Syntax Error: Error: Too few Fields\n"
+				+ "Record: "+book+"\n");
+		this.setBook(book);
+		
+	}
+
+
+	public String getBook() {
+		return book;
+	}
+
+	public void setBook(String book) {
+		this.book = book;
+	}
+
 	
 }

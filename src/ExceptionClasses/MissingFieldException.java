@@ -1,41 +1,20 @@
 package ExceptionClasses;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 
 public class MissingFieldException extends Exception {
 	
 	private String errorField = "";
+	private String book = "";
 	
-	public MissingFieldException() {
-		super("Syntax Error: Missing Feild exception.");
-	}
 	
-	public MissingFieldException(int field) {
-		super("Syntax Error: Missing Feild exception at field number: "+field);
-	
+	public MissingFieldException(String field, String book) {
 		
-		switch(field) {
-			case 1:
-				this.setErrorField("title");
-			break;
-			case 2:
-				this.setErrorField("authors");
-			break;
-			case 3:
-				this.setErrorField("price");
-			break;
-			case 4:
-				this.setErrorField("isbn");
-			break;
-			case 5:
-				this.setErrorField("genre");
-			break;
-			case 6:
-				this.setErrorField("year");
-			break;
-		}
+		super("Syntax Error: Missing field exception\n"
+				+"Error: missing "+field+"\n"
+				+ "Record: "+book+"\n");
+		this.setErrorField(field);
+		this.setBook(book);
+		
 	}
 
 	public String getErrorField() {
@@ -44,6 +23,14 @@ public class MissingFieldException extends Exception {
 
 	public void setErrorField(String errorField) {
 		this.errorField = errorField;
+	}
+
+	public String getBook() {
+		return book;
+	}
+
+	public void setBook(String book) {
+		this.book = book;
 	}
 
 }
