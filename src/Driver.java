@@ -1,3 +1,11 @@
+ 
+//-----------------------------------------------------
+// Assignment 2
+// Question: 1,2,3
+// Written by: Andrew Pulsifer 40234525
+// -----------------------------------------------------
+
+
 import java.util.Scanner;
 
 import ExceptionClasses.BadIsbn10Exception;
@@ -21,7 +29,10 @@ import java.io.BufferedWriter;
 import java.io.EOFException;
 import java.io.File;
 
-
+/**
+ * Class that creates csv and binary files and reads back the values in a organized menu
+ * @author Andrew Pulsifer 40234525 
+ */
 
 public class Driver {
 	
@@ -57,7 +68,21 @@ public class Driver {
 		        }
 		}
 	}
+	
+private static void createErrorFiles() {
+	try {
+		 FileWriter genreFileWriter = new FileWriter("syntax_error_file.txt");
+	 }catch (IOException e) {
+           e.printStackTrace();
+           System.out.println("An error occurred while creating the txt file.");
+       }
+		
+}
 
+	/**
+	 * Static method that checks for syntax errors and creates cvs files sorted by genre
+	 * of all books without syntax errors
+	 */	
 	private static void part1() {
 		Scanner scInput = null;
 		Scanner scFileReader = null;
@@ -70,9 +95,10 @@ public class Driver {
 		String genre="";
 		
 		
-		
 		try {
 			scInput= new Scanner (new FileInputStream(inputNames));//open list of file names
+			
+			createErrorFiles();
 			
 			try {
 				errStream = new PrintStream(new FileOutputStream("syntax_error_file.txt",false));
@@ -88,16 +114,12 @@ public class Driver {
 				Driver.createGenreFiles();
 				
 				numInput = scInput.nextInt();//stores number
-				System.out.println(numInput);
 				scInput.nextLine();//moves down a line from the number
 				
 				while(ctr<=numInput && scInput.hasNextLine()) {//iterates through all book names
 			
 						try {
 							String name =scInput.nextLine();
-							System.out.println();
-							System.out.println(name);
-							System.out.println();
 							
 							scFileReader= new Scanner (new FileInputStream(name));
 							errorCounter =0;
@@ -140,7 +162,7 @@ public class Driver {
 							scFileReader.close();	
 						}
 						catch(FileNotFoundException e){
-							System.out.println("Invalid name");
+							
 						}
 					ctr++;
 				}
@@ -155,6 +177,16 @@ public class Driver {
 		} 
 	}
 
+	
+	/**
+	 * Check for syntax errors and throws exception if one exists
+	 * 
+	 * @param book	book input read from file 
+	 * @throws TooManyFieldsException
+	 * @throws TooFewFieldsException 
+	 * @throws	MissingFieldException
+	 * @throws UnknownGenreException 
+	 */	
 	private static String checkSyntax(String book) throws TooManyFieldsException,TooFewFieldsException,MissingFieldException,UnknownGenreException {
 	
 		String orgBook=book;
@@ -231,6 +263,12 @@ public class Driver {
 		
 	}
 	
+	/**
+	 * Checks if a field is empty
+	 * 
+	 * @param field	space between commas
+	 * @return true/false
+	 */	
 	private static boolean isMissing(String field) {
 		return field.length()==0;
 	}
@@ -296,7 +334,6 @@ public class Driver {
 			genreWriter.close();
 		}
 		catch(FileNotFoundException e){
-			System.out.println("Invalid name");
 		}
 	}
 	
@@ -343,18 +380,18 @@ private static String[] containsQ(String book) {
 	return bookArr;
 }
 
-private static double parsePrice(String priceStr) throws BadPriceException {
+private static double parsePrice(String priceStr, String book) throws BadPriceException {
 	try {
 	   return Double.parseDouble(priceStr);
 	} catch (NumberFormatException e) {
-	   throw  new BadPriceException();
+	   throw  new BadPriceException(book);
 	}
 }
-private static int parseYear(String yearStr) throws BadPriceException {
+private static int parseYear(String yearStr, String book) throws BadPriceException {
 	try {
 	   return Integer.parseInt(yearStr);
 	} catch (NumberFormatException e) {
-	   throw  new BadPriceException();
+	   throw  new BadPriceException(book);
 	}
 }
 
@@ -389,38 +426,34 @@ private static Book[] createArr(int c) throws FileNotFoundException {
 			        }
 					
 				try {
-					arrOfGenres[currentSize] = new Book(fieldArr[0], fieldArr[1], checkPrice(parsePrice(fieldArr[2])),
-		                    checkISBN(fieldArr[3]), fieldArr[4], checkYear(parseYear(fieldArr[5])));
+					arrOfGenres[currentSize] = new Book(fieldArr[0], fieldArr[1], checkPrice(parsePrice(fieldArr[2],book),book),
+		                    checkISBN(fieldArr[3],book), fieldArr[4], checkYear(parseYear(fieldArr[5],book),book));
 					currentSize++;
 				}
 				catch(BadPriceException e) {
 					if(errorCounter==0)
 						printErrorFileName(genreFileName[c]);
-					System.err.println("Error: Bad Price\n"
-							+ "Record: "+book+"\n");
+					System.err.println(e.getMessage());
 					errorCounter++;
 				}
 				
 				catch(BadIsbn10Exception e) {
 					if(errorCounter==0)
 						printErrorFileName(genreFileName[c]);
-					System.err.println("Error: Bad Isbn of length 10\n"
-							+ "Record: "+book+"\n");
+					System.err.println(e.getMessage());
 					errorCounter++;
 					
 				}
 				catch(BadIsbn13Exception e) {
 					if(errorCounter==0)
 						printErrorFileName(genreFileName[c]);
-					System.err.println("Error: Bad Isbn of length 13\n"
-							+ "Record: "+book+"\n");
+					System.err.println(e.getMessage());
 					errorCounter++;
 				}
 				catch(BadYearException e) {
 					if(errorCounter==0)
 						printErrorFileName(genreFileName[c]);
-					System.err.println("Error: Bad year\n"
-							+ "Record: "+book+"\n");
+					System.err.println(e.getMessage());
 					errorCounter++;
 					
 				}
@@ -484,43 +517,43 @@ private static void part2() {
 }
 
 	
-private static double checkPrice(double price) throws BadPriceException {
+private static double checkPrice(double price, String book) throws BadPriceException {
 	
 	if(price<0)
-		throw new BadPriceException();	
+		throw new BadPriceException(book);	
 	
 	return price;
 
 }
 
-private static int checkYear(int year) throws BadYearException {
+private static int checkYear(int year, String book) throws BadYearException {
 	if(year<1995|| year>2010)
-		throw new BadYearException();
+		throw new BadYearException(book);
 	
 	return year;
 }
 
-private static String checkISBN(String ISBN) throws BadIsbn10Exception, BadIsbn13Exception{
+private static String checkISBN(String ISBN, String book) throws BadIsbn10Exception, BadIsbn13Exception{
 	
 	if(ISBN.length()==10) {
 		
 			if(ISBN.contains("X")) 
-				throw new BadIsbn10Exception();
+				throw new BadIsbn10Exception(book);
 			
 			if(Driver.checkISBN10(ISBN))
-				throw new BadIsbn10Exception();
+				throw new BadIsbn10Exception(book);
 	}
 	else if(ISBN.length()==13) {
 		
 			if(ISBN.contains("X")) 
-				throw new BadIsbn10Exception();
+				throw new BadIsbn10Exception(book);
 			
 			if(Driver.checkISBN13(ISBN)) 
-				throw new BadIsbn13Exception();
+				throw new BadIsbn13Exception(book);
 		
 	}
 	else
-		throw new BadIsbn13Exception();
+		throw new BadIsbn13Exception(book);
 	
 	return ISBN;
 	
@@ -556,10 +589,19 @@ private static boolean checkISBN13(String ISBN) {
 }
 
 private static void printObject(Book [] arr,int currentPos) {
-	System.out.println("-----------------------------\n");
+	System.out.println("\n-----------------------------");
 	System.out.println("Object at Position:"+ currentPos);
 	System.out.println("-----------------------------\n");
 	System.out.println(arr[currentPos]);
+}
+
+private static int printInstructions(Scanner sc) {
+	System.out.println("\n-----------------------------");
+	System.out.print("Input Range or 0 to exit:");
+	int userInput=sc.nextInt();
+	System.out.println("-----------------------------");
+	
+	return userInput;
 }
 	
 private static void objectNavigator(Book [] arr,Scanner sc) {
@@ -567,11 +609,12 @@ private static void objectNavigator(Book [] arr,Scanner sc) {
 	int endPos = 0;
 	int userInput=1;
 	int m=1;
-
+	
 	printObject(arr,currentPos);
-	do {
-		System.out.print("Input Range or 0 to exit:");
-		userInput=sc.nextInt();
+	userInput=printInstructions(sc);
+	
+	
+	while(userInput!=0) {
 		
 		if(userInput<0) {
 			m=-1;
@@ -579,11 +622,19 @@ private static void objectNavigator(Book [] arr,Scanner sc) {
 		}
 		endPos=currentPos + ((userInput-1)*m);
 		if(endPos>arr.length-1) {
+			System.out.println("\n----------------------------------------------------------");
+			System.out.println("----------------------------------------------------------");
 			System.out.println("BOF has been reached");
+			System.out.println("----------------------------------------------------------");
+			System.out.println("----------------------------------------------------------");
 			endPos=arr.length-1;
 		}
 			else if(endPos<0) {
+				System.out.println("\n----------------------------------------------------------");
+				System.out.println("----------------------------------------------------------");
 				System.out.println("BOF has been reached");
+				System.out.println("----------------------------------------------------------");
+				System.out.println("----------------------------------------------------------");
 				endPos=0;
 				}
 				
@@ -594,7 +645,10 @@ private static void objectNavigator(Book [] arr,Scanner sc) {
 			printObject(arr,currentPos);
 		}
 		
-	}while(userInput!=0);
+		userInput=printInstructions(sc);
+		
+		
+	}
 }
 	
 private static void part3() {
@@ -626,7 +680,11 @@ private static void part3() {
 			}
 			
 			if(userInput.equals("v")) {
-				System.out.println("viewing: "+genreFileName[selectHolder]+".ser ("+ returnArray(selectHolder).length +" records))");
+				System.out.println("----------------------------------------------------------");
+				System.out.println("---------------------------------------------------------------------------------------");
+				System.out.println("Viewing: "+genreFileName[selectHolder-1]+".ser ("+ returnArray(selectHolder).length +" records))");
+				System.out.println("---------------------------------------------------------------------------------------");
+				System.out.println("----------------------------------------------------------");
 				if(returnArray(selectHolder).length!=0)
 					objectNavigator(returnArray(selectHolder),sc);
 				
@@ -638,6 +696,7 @@ private static void part3() {
 		while(!userInput.equals("x") && !userInput.equals("X"));
 		
 		sc.close();
+		System.exit(0);
 }
 	
 private static Book [] deSerialize(int c) {

@@ -1,3 +1,10 @@
+//-----------------------------------------------------
+// Assignment 2
+// Question: 1,2,3
+// Written by: Andrew Pulsifer 40234525
+// -----------------------------------------------------
+
+
 import java.io.Serializable;
 
 public class Book implements Serializable  {
