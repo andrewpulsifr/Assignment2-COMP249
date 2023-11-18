@@ -1,3 +1,4 @@
+
  
 //-----------------------------------------------------
 // Assignment 2
@@ -860,6 +861,7 @@ public class Driver {
 				}
 				catch(EOFException e)
 				{
+					b1= new Book[0];
 				}
 			ois.close();		// Close the file
 	
@@ -954,7 +956,7 @@ public class Driver {
 	 */
 	public static void main(String[] args) {
 		
-		Driver.part1();// validating syntax, partition book records based on genre.
+		part1();// validating syntax, partition book records based on genre.
 		
 		part2(); // validating semantics, read the genre files each into arrays of Book objects,
 		

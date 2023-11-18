@@ -1,3 +1,5 @@
+package ExceptionClasses;
+
 /**
  * Custom exception class for handling syntax errors related to missing fields.
  * This exception is thrown when a required field is missing in a record.
