@@ -431,3 +431,7 @@ Record: Retro Ride,Tony Swan,14.95,188805462X,TPA,2005
 Semantic Error: Bad ISBN of length 10
 Record: Corvette - Definitive Guide To The All-American Sports Car,Andrew Montgomery,14.95,159223061X,TPA,2006
 
+Exception in thread "main" java.lang.NullPointerException: Cannot read the array length because "array" is null
+	at Driver.printMenu(Driver.java:894)
+	at Driver.part3(Driver.java:809)
+	at Driver.main(Driver.java:964)
